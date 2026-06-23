@@ -7,30 +7,30 @@ const userSchema = new Schema(
         username: {
             type: String,
             required: true,
-            unique:true,
+            unique: true,
             lowercase: true,
-            trim: true,
+            trim: true, 
             index: true
         },
         email: {
             type: String,
             required: true,
-            unique:true,
-            lowercase: true,
-            trim: true,
+            unique: true,
+            lowecase: true,
+            trim: true, 
         },
-        fullname: {
+        fullName: {
             type: String,
             required: true,
-            trim: true,
+            trim: true, 
             index: true
         },
         avatar: {
-            type: String,
+            type: String, // cloudinary url
             required: true,
         },
         coverImage: {
-            type: String, 
+            type: String, // cloudinary url
         },
         watchHistory: [
             {
@@ -42,22 +42,23 @@ const userSchema = new Schema(
             type: String,
             required: [true, 'Password is required']
         },
-        refereshToken: {
+        refreshToken: {
             type: String
         }
+
     },
     {
         timestamps: true
     }
 )
 
-userSchema.pre("save", async function (next) {
-    if(!this.isModified("password")) return next();
-    this.password = await bcrypt.hash(this.password, 10)
-    next
-})
+userSchema.pre("save", async function () {
+    if(!this.isModified("password")) return;
 
-userSchema.methods.isPasswordCorrect = async function (password){
+    this.password = await bcrypt.hash(this.password, 10)
+});
+
+userSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password)
 }
 
@@ -67,7 +68,7 @@ userSchema.methods.generateAccessToken = function(){
             _id: this._id,
             email: this.email,
             username: this.username,
-            fullname: this.fullname
+            fullName: this.fullName
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
@@ -75,11 +76,11 @@ userSchema.methods.generateAccessToken = function(){
         }
     )
 }
-
-userSchema.methods.generateRefereshToken = function() {
+userSchema.methods.generateRefreshToken = function(){
     return jwt.sign(
         {
             _id: this._id,
+            
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
@@ -87,6 +88,5 @@ userSchema.methods.generateRefereshToken = function() {
         }
     )
 }
-
 
 export const User = mongoose.model("User", userSchema)
